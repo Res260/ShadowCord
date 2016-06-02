@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace ShadowCord
 {
@@ -12,6 +13,8 @@ namespace ShadowCord
         static void Main()
         {
 			SettingsManager settings = new SettingsManager();
+			Console.WriteLine(settings.GetSetting<Boolean>("test"));
+			Thread.Sleep(5000);
         }
     }
 }

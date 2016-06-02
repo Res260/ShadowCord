@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Diagnostics;
 using System.Xml.Linq;
+using System.ComponentModel;
 
 namespace ShadowCord
 {
@@ -19,9 +20,20 @@ namespace ShadowCord
 		private string PathToFileName;
 		private XElement Settings;
 
-		public string GetSetting()
+		public T GetSetting<T>(string setting)
 		{
-			return null;
+			string value = Settings.Element(setting).Value;
+			T convertedValue;
+			try
+			{
+				TypeConverter typeConverter = TypeDescriptor.GetConverter(typeof(T));
+				convertedValue = (T)typeConverter.ConvertFromString(value);
+			}
+			catch(Exception e)
+			{
+				convertedValue = default(T);
+			}
+			return convertedValue;
 		}
 
 		/// <summary>
@@ -41,7 +53,7 @@ namespace ShadowCord
 			if (Settings == null)
 			{
 				Console.WriteLine("There was a problem instantiating SettingsManager. Application closing.");
-				System.Environment.Exit(1);
+				System.Environment.Exit(420);
 			}
 		}
 
@@ -89,7 +101,5 @@ namespace ShadowCord
 		{
 			Settings.Save(PathToFileName);
 		}
-
-
 	}
 }
