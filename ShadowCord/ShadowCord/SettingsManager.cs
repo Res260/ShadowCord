@@ -1,56 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Diagnostics;
-using System.Xml.Linq;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Xml.Linq;
 
 namespace ShadowCord
 {
-	/// <summary>
-	/// This class holds the basic settings of the application. 
-	/// It deals with the file to read so the user doen't have to.
-	/// </summary>
-	class SettingsManager
-	{
-		private string FileName;
-		private string PathToFileName;
-		private XElement Settings;
+	// -----------------------------------------------------------------------
+	// <copyright>Copyright (c) 2016 Émilio Gonzalez. Licensed under the GNU
+	//           Public License (GPL) version 3.0
+	//			 See LICENSE file for details.
+	// </copyright>
+	// <author>Émilio Gonzalez</author>
+	//-----------------------------------------------------------------------
 
-		public T GetSetting<T>(string setting)
-		{
-			string value = Settings.Element(setting).Value;
-			T convertedValue;
-			try
-			{
-				TypeConverter typeConverter = TypeDescriptor.GetConverter(typeof(T));
-				convertedValue = (T)typeConverter.ConvertFromString(value);
-			}
-			catch(Exception e)
-			{
-				convertedValue = default(T);
-			}
-			return convertedValue;
-		}
+	/// <summary>
+	/// This class holds the basic settings (in XML) of the application. It deals with the file to
+	/// read so the user doesn't have to.
+	/// </summary>
+	internal class SettingsManager
+	{
+		/// <summary>
+		/// The settings file name.
+		/// </summary>
+		private string fileName;
 
 		/// <summary>
-		/// Constructor for SettingsManager. Reads the settings file (in XML)
-		/// or creates one with default values if none exist.
+		/// The path to the settings file name.
+		/// </summary>
+		private string pathToFileName;
+
+		/// <summary>
+		/// The XML element that contains the settings.
+		/// </summary>
+		private XElement settings;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SettingsManager"/> class. Reads the settings
+		/// file (in XML) or creates one with default values if none exist.
 		/// </summary>
 		public SettingsManager()
 		{
-			FileName = "SCSettings.xml";
-			PathToFileName = Directory.GetCurrentDirectory() + FileName;
-			Debug.WriteLine(PathToFileName);
-			if (!File.Exists(PathToFileName))
+			fileName = "SCSettings.xml";
+			pathToFileName = Directory.GetCurrentDirectory() + fileName;
+			Debug.WriteLine(pathToFileName);
+			if (!File.Exists(pathToFileName))
 			{
 				CreateSettingsFile();
 			}
+
 			ReadSettingsFile();
-			if (Settings == null)
+			if (settings == null)
 			{
 				Console.WriteLine("There was a problem instantiating SettingsManager. Application closing.");
 				System.Environment.Exit(420);
@@ -58,40 +58,29 @@ namespace ShadowCord
 		}
 
 		/// <summary>
-		/// Reads the settings file and sets the class' attributes with
-		/// the file's content.
+		/// Gets the value of the requested setting.
 		/// </summary>
-		private void ReadSettingsFile()
+		/// <typeparam name="T">The type of the setting's value you want to get</typeparam>
+		/// <param name="setting">the name of the setting you want to get</param>
+		/// <returns>
+		/// The value (of type T) of the setting. If the value cannot be converted to type T, it
+		/// returns the default value of that type.
+		/// </returns>
+		public T GetSetting<T>(string setting)
 		{
+			string value = settings.Element(setting).Value;
+			T convertedValue;
 			try
 			{
-				XDocument document = XDocument.Load(PathToFileName);
-				Settings = document.Root;
+				TypeConverter typeConverter = TypeDescriptor.GetConverter(typeof(T));
+				convertedValue = (T)typeConverter.ConvertFromString(value);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Cannot open " + PathToFileName + " as a valid XML document.");
+				convertedValue = default(T);
 			}
-		}
 
-		/// <summary>
-		/// Creates a setting file named after the FileName attribute.
-		/// Also write default values in it.
-		/// </summary>
-		private void CreateSettingsFile()
-		{
-			Debug.WriteLine("CreateSettingsFile()");
-			try
-			{
-				Settings = new XElement("settings",
-					new XElement("test", 1000)
-					);
-				Save();
-			}
-			catch (IOException e)
-			{
-				Console.WriteLine("Cannot create " + PathToFileName + "! :(");
-			}
+			return convertedValue;
 		}
 
 		/// <summary>
@@ -99,7 +88,40 @@ namespace ShadowCord
 		/// </summary>
 		public void Save()
 		{
-			Settings.Save(PathToFileName);
+			settings.Save(pathToFileName);
+		}
+
+		/// <summary>
+		/// Creates a setting file named after the FileName attribute. Also write default values in it.
+		/// </summary>
+		private void CreateSettingsFile()
+		{
+			Debug.WriteLine("CreateSettingsFile()");
+			try
+			{
+				settings = new XElement("settings", new XElement("test", 1000));
+				Save();
+			}
+			catch (IOException e)
+			{
+				Console.WriteLine("Cannot create " + pathToFileName + "! :(");
+			}
+		}
+
+		/// <summary>
+		/// Reads the settings file and sets the class' attributes with the file's content.
+		/// </summary>
+		private void ReadSettingsFile()
+		{
+			try
+			{
+				XDocument document = XDocument.Load(pathToFileName);
+				settings = document.Root;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Cannot open " + pathToFileName + " as a valid XML document.");
+			}
 		}
 	}
 }
